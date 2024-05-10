@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Fortfolio</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: red;
+            overflow: hidden;
+        }
+
+        #image-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+
+        #blending-layer {
+            mix-blend-mode: screen;
+            width: 100%;
+            height: 100%;
+        }
+
+        #content {
+            position: relative;
+            z-index: 3;
+            text-align: center;
+            color: white; /* Change text color for visibility */
+            padding-top: 50px; /* Adjust as needed */
+        }
+        
+        #contentlow {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            color: rgb(0, 0, 0); /* Change text color for visibility */
+            z-index: 3;
+            padding-top: 20px; /* Adjust as needed */
+            font-size: 100px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="content image-container">
+        <img id="blending-layer" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSvL-nFKWybX7dafDckhl_MpL2SUqj5pPQtU_2okbtA9A&s" alt="">
+    </div>
+    
+    <div id="contentlow">
+        <h1>My Fortpolio</h1>
+        <br>
+        <br>
+        <hr>
+        <div>
+            <marquee scrollamount="100"><b><h4>Name: Wency S. Lacasa</h4></b></marquee>
+            <br>
+            <h5>Age: 18 + ?</h5>
+            <br>
+            <h5> Computer Science</h5>
+        </div>
+    </div>
+</body>
+
+</html>
