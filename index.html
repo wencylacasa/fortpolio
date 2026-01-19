@@ -2,74 +2,39 @@
 <html>
 
 <head>
-    <title>Fortfolio</title>
+    <title>Portfolio - Wency S. Lacasa</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            background-color: red;
-            overflow: hidden;
-        }
-
-        #image-container {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-        }
-
-        #blending-layer {
-            mix-blend-mode: screen;
-            width: 100%;
-            height: 100%;
-        }
-
-        #content {
-            position: relative;
-            z-index: 3;
-            text-align: center;
-            color: white; /* Change text color for visibility */
-            padding-top: 50px; /* Adjust as needed */
-        }
-        
-        #contentlow {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            text-align: center;
-            color: rgb(0, 0, 0); /* Change text color for visibility */
-            z-index: 3;
-            padding-top: 20px; /* Adjust as needed */
-            font-size: 30px;
-        }
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
-    <div id="content image-container">
-        <img id="blending-layer" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSvL-nFKWybX7dafDckhl_MpL2SUqj5pPQtU_2okbtA9A&s" alt="">
-    </div>
-    
-    <div id="contentlow">
-        <h1>My Fortpolio</h1>
-        <br>
-        <br>
-        <hr>
-        <div>
-            <marquee scrollamount="40">
-                <img src="https://w7.pngwing.com/pngs/343/737/png-transparent-ben-10-illustration-ben-10-cartoon-1080p-ben-10-miscellaneous-game-hand.png" alt="" width="150" height="150">
-                <b><h4>Name: Wency S. Lacasa</h4></b></marquee>
-            <br>
-            <h5>Age: 18 + ?</h5>
-            <br>
-            <h5> Computer Science</h5>
-        </div>
-    </div>
+    <header>
+        <h1>Wency S. Lacasa</h1>
+        <p>Computer Science Student</p>
+    </header>
+    <main>
+        <section id="about">
+            <h2>About Me</h2>
+            <p>I am a passionate computer science student with a strong interest in web development and software engineering. I am always eager to learn new technologies and apply my skills to solve real-world problems.</p>
+        </section>
+        <section id="projects">
+            <h2>Projects</h2>
+            <p>Here are some of the projects I've worked on:</p>
+            <ul>
+                <li>Project 1: A brief description of the project.</li>
+                <li>Project 2: A brief description of the project.</li>
+                <li>Project 3: A brief description of the project.</li>
+            </ul>
+        </section>
+        <section id="contact">
+            <h2>Contact</h2>
+            <p>You can reach me at: <a href="mailto:wency.lacasa@example.com">wency.lacasa@example.com</a></p>
+        </section>
+    </main>
+    <footer>
+        <p>&copy; 2024 Wency S. Lacasa</p>
+    </footer>
 </body>
 
 </html>
