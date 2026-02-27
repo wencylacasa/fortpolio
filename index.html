@@ -1,75 +1,513 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="en">
 <head>
-    <title>Fortfolio</title>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            background-color: red;
-            overflow: hidden;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Wency — Portfolio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet" />
 
-        #image-container {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-        }
+  <style>
+    /* ─── RESET & BASE ─────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-        #blending-layer {
-            mix-blend-mode: screen;
-            width: 100%;
-            height: 100%;
-        }
+    :root {
+      --bg:       #0c0c0e;
+      --surface:  #141416;
+      --border:   #2a2a2f;
+      --text:     #e8e6df;
+      --muted:    #6b6965;
+      --accent:   #c8a96e;
+      --accent2:  #7fa39b;
+      --font-display: 'Playfair Display', Georgia, serif;
+      --font-mono:    'DM Mono', monospace;
+    }
 
-        #content {
-            position: relative;
-            z-index: 3;
-            text-align: center;
-            color: white; /* Change text color for visibility */
-            padding-top: 50px; /* Adjust as needed */
-        }
-        
-        #contentlow {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            text-align: center;
-            color: rgb(0, 0, 0); /* Change text color for visibility */
-            z-index: 3;
-            padding-top: 20px; /* Adjust as needed */
-            font-size: 30px;
-        }
-    </style>
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-mono);
+      cursor: none;           /* hide native cursor so our custom one shines */
+      overflow-x: hidden;
+    }
+
+    /* ─── CUSTOM LOCAL CURSOR ─────────────────────────────── */
+    #local-cursor {
+      position: fixed;
+      width: 12px;
+      height: 12px;
+      border: 2px solid var(--accent);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 9999;
+      transform: translate(-50%, -50%);
+      transition: transform 0.06s ease;
+      mix-blend-mode: difference;
+    }
+    #local-cursor::after {
+      content: '';
+      position: absolute;
+      inset: -6px;
+      border-radius: 50%;
+      border: 1px solid rgba(200,169,110,0.25);
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50%       { transform: scale(1.6); opacity: 0; }
+    }
+
+    /* ─── REMOTE CURSORS ──────────────────────────────────── */
+    .remote-cursor {
+      position: fixed;
+      pointer-events: none;
+      z-index: 9998;
+      transform: translate(-50%, -50%);
+      transition: left 0.08s linear, top 0.08s linear;
+    }
+    .remote-cursor .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      display: block;
+    }
+    .remote-cursor .label {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.04em;
+      margin-top: 4px;
+      white-space: nowrap;
+      opacity: 0.85;
+    }
+
+    /* ─── NOTIFICATIONS ───────────────────────────────────── */
+    #notif-area {
+      position: fixed;
+      bottom: 24px;
+      left: 24px;
+      z-index: 9997;
+      display: flex;
+      flex-direction: column-reverse;
+      gap: 8px;
+    }
+    .notif {
+      font-size: 11px;
+      font-family: var(--font-mono);
+      color: var(--muted);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 6px 12px;
+      border-radius: 4px;
+      animation: fadeIn 0.3s ease forwards;
+      opacity: 0;
+    }
+    @keyframes fadeIn {
+      to { opacity: 1; }
+    }
+
+    /* ─── CONNECTION STATUS ───────────────────────────────── */
+    #status {
+      position: fixed;
+      top: 20px;
+      right: 24px;
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+    #status-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: #555;
+      transition: background 0.4s;
+    }
+    #status-dot.connected    { background: #6dbf8b; }
+    #status-dot.disconnected { background: #bf6d6d; }
+
+    /* ─── VISITOR COUNT ───────────────────────────────────── */
+    #visitor-count {
+      position: fixed;
+      top: 20px;
+      left: 24px;
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    /* ─── MAIN PAGE LAYOUT ────────────────────────────────── */
+    main {
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 40px 24px;
+    }
+
+    .card {
+      max-width: 680px;
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      padding: 64px 56px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* decorative corner lines */
+    .card::before, .card::after {
+      content: '';
+      position: absolute;
+      width: 40px; height: 40px;
+      border-color: var(--accent);
+      border-style: solid;
+      opacity: 0.5;
+    }
+    .card::before { top: 16px; left: 16px; border-width: 1px 0 0 1px; }
+    .card::after  { bottom: 16px; right: 16px; border-width: 0 1px 1px 0; }
+
+    .eyebrow {
+      font-size: 10px;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 20px;
+    }
+
+    h1 {
+      font-family: var(--font-display);
+      font-size: clamp(2.6rem, 6vw, 4rem);
+      font-weight: 700;
+      line-height: 1.08;
+      letter-spacing: -0.01em;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+    h1 em {
+      font-style: italic;
+      color: var(--accent);
+    }
+
+    .tagline {
+      font-family: var(--font-display);
+      font-style: italic;
+      font-size: 1.05rem;
+      color: var(--muted);
+      margin-bottom: 40px;
+    }
+
+    .divider {
+      width: 48px;
+      height: 1px;
+      background: var(--accent);
+      opacity: 0.4;
+      margin-bottom: 32px;
+    }
+
+    p {
+      font-size: 0.82rem;
+      line-height: 1.85;
+      color: #a8a5a0;
+      margin-bottom: 20px;
+    }
+
+    /* ─── WORK PILLS ──────────────────────────────────────── */
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 32px 0;
+    }
+    .tag {
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      border: 1px solid var(--border);
+      padding: 5px 12px;
+      border-radius: 2px;
+      color: var(--muted);
+      transition: color 0.2s, border-color 0.2s;
+    }
+    .tag:hover { color: var(--accent); border-color: var(--accent); }
+
+    /* ─── CONTACT ─────────────────────────────────────────── */
+    .contact {
+      display: flex;
+      gap: 24px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .contact a {
+      font-size: 10px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--accent2);
+      text-decoration: none;
+      border-bottom: 1px solid transparent;
+      transition: border-color 0.2s;
+    }
+    .contact a:hover { border-color: var(--accent2); }
+
+    .availability {
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .avail-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: #6dbf8b;
+      animation: pulse 2s infinite;
+    }
+
+    /* ─── GRID DECORATION ─────────────────────────────────── */
+    .bg-grid {
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(var(--border) 1px, transparent 1px),
+        linear-gradient(90deg, var(--border) 1px, transparent 1px);
+      background-size: 48px 48px;
+      opacity: 0.18;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    main { position: relative; z-index: 1; }
+  </style>
 </head>
-
 <body>
-    <div id="content image-container">
-        <img id="blending-layer" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSvL-nFKWybX7dafDckhl_MpL2SUqj5pPQtU_2okbtA9A&s" alt="">
-    </div>
-    
-    <div id="contentlow">
-        <h1>My Fortpolio</h1>
-        <br>
-        <br>
-        <hr>
-        <div>
-            <marquee scrollamount="40">
-                <img src="https://w7.pngwing.com/pngs/343/737/png-transparent-ben-10-illustration-ben-10-cartoon-1080p-ben-10-miscellaneous-game-hand.png" alt="" width="150" height="150">
-                <b><h4>Name: Wency S. Lacasa</h4></b></marquee>
-            <br>
-            <h5>Age: 18 + ?</h5>
-            <br>
-            <h5> Computer Science</h5>
-        </div>
-    </div>
-</body>
 
+  <!-- Subtle background grid -->
+  <div class="bg-grid"></div>
+
+  <!-- Local cursor indicator -->
+  <div id="local-cursor"></div>
+
+  <!-- Status indicators -->
+  <div id="status"><div id="status-dot"></div><span id="status-text">connecting</span></div>
+  <div id="visitor-count">0 visitors</div>
+
+  <!-- Notifications for join/leave -->
+  <div id="notif-area"></div>
+
+  <!-- Main page content -->
+  <main>
+    <div class="card">
+      <p class="eyebrow">Portfolio — 2025</p>
+      <h1>Wency<br><em>Builds Things.</em></h1>
+      <p class="tagline">Designer &amp; Developer, somewhere between craft and code.</p>
+
+      <div class="divider"></div>
+
+      <p>
+        I create thoughtful digital experiences — from interface design to production-ready
+        front-ends. I care about the details that most people never notice, and the ones
+        that everyone feels.
+      </p>
+      <p>
+        Currently focused on interactive web work, design systems, and the occasional
+        side project that scratches an itch I didn't know I had.
+      </p>
+
+      <div class="tags">
+        <span class="tag">UI / UX</span>
+        <span class="tag">Front-End Dev</span>
+        <span class="tag">Design Systems</span>
+        <span class="tag">Motion</span>
+        <span class="tag">Open Source</span>
+        <span class="tag">Creative Coding</span>
+      </div>
+
+      <div class="contact">
+        <span class="availability"><span class="avail-dot"></span>Available for work</span>
+        <a href="mailto:hello@wency.dev">hello@wency.dev</a>
+        <a href="#">GitHub</a>
+        <a href="#">LinkedIn</a>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // ─────────────────────────────────────────────────────────
+    //  REAL-TIME CURSOR SHARING via WebSocket (echo.websocket.org)
+    //
+    //  How it works:
+    //  1. Each visitor generates a unique ID and a random colour.
+    //  2. On mousemove, we broadcast a JSON message with our ID,
+    //     name, colour, and normalised x/y position (0–1 range).
+    //  3. Because echo.websocket.org reflects every message back to
+    //     ALL connected clients, every other tab/browser receives it.
+    //  4. We render received cursors as coloured dots with labels.
+    //  5. When a tab disconnects, we send a "leave" message so
+    //     others can remove that cursor and show a notification.
+    // ─────────────────────────────────────────────────────────
+
+    /* ── Unique identity for this visitor ── */
+    const ME = {
+      id:    crypto.randomUUID(),                          // unique per tab
+      name:  'visitor_' + Math.random().toString(36).slice(2, 6), // random label
+      color: `hsl(${Math.floor(Math.random() * 360)}, 70%, 65%)`, // random hue
+    };
+
+    /* ── State ── */
+    const remoteCursors = {};   // { [id]: { el, lastSeen } }
+    let ws = null;
+    let reconnectTimer = null;
+
+    /* ── DOM refs ── */
+    const localCursorEl  = document.getElementById('local-cursor');
+    const statusDot      = document.getElementById('status-dot');
+    const statusText     = document.getElementById('status-text');
+    const visitorCount   = document.getElementById('visitor-count');
+    const notifArea      = document.getElementById('notif-area');
+
+    /* ── Move our custom cursor dot ── */
+    document.addEventListener('mousemove', e => {
+      localCursorEl.style.left = e.clientX + 'px';
+      localCursorEl.style.top  = e.clientY  + 'px';
+      broadcastCursor(e.clientX, e.clientY);
+    });
+
+    /* ── Broadcast position as normalised coords (0–1) ──────
+       Using normalised values means cursors map correctly even
+       if visitors have different screen sizes.                 */
+    function broadcastCursor(px, py) {
+      if (!ws || ws.readyState !== WebSocket.OPEN) return;
+      const msg = {
+        type:  'move',
+        id:    ME.id,
+        name:  ME.name,
+        color: ME.color,
+        x:     px / window.innerWidth,    // normalise to 0–1
+        y:     py / window.innerHeight,
+      };
+      ws.send(JSON.stringify(msg));
+    }
+
+    /* ── Send a "leave" beacon when the tab is closed ── */
+    window.addEventListener('beforeunload', () => {
+      if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({ type: 'leave', id: ME.id, name: ME.name }));
+      }
+    });
+
+    /* ── WebSocket connection & reconnection ── */
+    function connect() {
+      setStatus('connecting');
+      ws = new WebSocket('wss://echo.websocket.org');
+
+      ws.addEventListener('open', () => {
+        setStatus('connected');
+        // Announce our arrival
+        ws.send(JSON.stringify({ type: 'join', id: ME.id, name: ME.name, color: ME.color }));
+      });
+
+      ws.addEventListener('message', e => {
+        let msg;
+        try { msg = JSON.parse(e.data); } catch { return; }
+
+        // Ignore our own messages (the server echoes them back to us too)
+        if (msg.id === ME.id) return;
+
+        if (msg.type === 'move') {
+          handleRemoteMove(msg);
+        } else if (msg.type === 'join') {
+          showNotif(`✦ ${msg.name} joined`);
+        } else if (msg.type === 'leave') {
+          handleRemoteLeave(msg);
+        }
+      });
+
+      ws.addEventListener('close', () => {
+        setStatus('disconnected');
+        // Auto-reconnect after 3 s
+        reconnectTimer = setTimeout(connect, 3000);
+      });
+
+      ws.addEventListener('error', () => ws.close());
+    }
+
+    /* ── Render / update a remote cursor ── */
+    function handleRemoteMove(msg) {
+      if (!remoteCursors[msg.id]) {
+        // First time we see this visitor: create a cursor element
+        const el = document.createElement('div');
+        el.className = 'remote-cursor';
+        el.innerHTML = `
+          <span class="dot" style="background:${msg.color}"></span>
+          <span class="label" style="color:${msg.color}">${msg.name}</span>
+        `;
+        document.body.appendChild(el);
+        remoteCursors[msg.id] = { el };
+      }
+
+      // Convert normalised coords back to pixels for this viewport
+      const px = msg.x * window.innerWidth;
+      const py = msg.y * window.innerHeight;
+      const el = remoteCursors[msg.id].el;
+      el.style.left = px + 'px';
+      el.style.top  = py + 'px';
+
+      updateVisitorCount();
+    }
+
+    /* ── Remove a cursor when visitor leaves ── */
+    function handleRemoteLeave(msg) {
+      if (remoteCursors[msg.id]) {
+        remoteCursors[msg.id].el.remove();
+        delete remoteCursors[msg.id];
+        showNotif(`◌ ${msg.name} left`);
+        updateVisitorCount();
+      }
+    }
+
+    /* ── Stale cursor cleanup (in case "leave" was never received) ── */
+    setInterval(() => {
+      // If we haven't heard from a cursor in 15 s, quietly remove it
+      // (In this simple demo we don't timestamp, so just check count integrity)
+      updateVisitorCount();
+    }, 5000);
+
+    /* ── Update visitor count badge ── */
+    function updateVisitorCount() {
+      const n = Object.keys(remoteCursors).length;
+      visitorCount.textContent = n === 0
+        ? 'Only you here'
+        : `${n} other visitor${n > 1 ? 's' : ''} here`;
+    }
+
+    /* ── Connection status UI ── */
+    function setStatus(state) {
+      statusDot.className = state;
+      statusText.textContent = state;
+    }
+
+    /* ── Join/leave toast notifications ── */
+    function showNotif(text) {
+      const el = document.createElement('div');
+      el.className = 'notif';
+      el.textContent = text;
+      notifArea.prepend(el);
+      // Auto-remove after 4 s
+      setTimeout(() => {
+        el.style.transition = 'opacity 0.4s';
+        el.style.opacity = '0';
+        setTimeout(() => el.remove(), 400);
+      }, 4000);
+    }
+
+    /* ── Boot ── */
+    connect();
+    updateVisitorCount();
+  </script>
+</body>
 </html>
